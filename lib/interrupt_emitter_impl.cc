@@ -20,23 +20,27 @@ namespace gr {
 namespace timing_utils {
 
 template <class T>
-typename interrupt_emitter<T>::sptr interrupt_emitter<T>::make(double rate,
-                                                               bool drop_late)
+typename interrupt_emitter<T>::sptr
+interrupt_emitter<T>::make(double rate, bool drop_late, double loop_gain)
 {
-    return gnuradio::get_initial_sptr(new interrupt_emitter_impl<T>(rate, drop_late));
+    return gnuradio::get_initial_sptr(
+        new interrupt_emitter_impl<T>(rate, drop_late, loop_gain));
 }
 
 /*
  * The private constructor
  */
 template <class T>
-interrupt_emitter_impl<T>::interrupt_emitter_impl(double rate, bool drop_late)
+interrupt_emitter_impl<T>::interrupt_emitter_impl(double rate,
+                                                  bool drop_late,
+                                                  double loop_gain)
     : gr::sync_block("interrupt_emitter",
                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
                      gr::io_signature::make(0, 0, 0)),
       reference_timer(),
       d_rate(rate),
-      d_drop_late(drop_late)
+      d_drop_late(drop_late),
+      d_gain(loop_gain)
 {
     this->message_port_register_out(PMTCONSTSTR__trig());
     this->message_port_register_in(PMTCONSTSTR__set());
@@ -50,7 +54,7 @@ interrupt_emitter_impl<T>::interrupt_emitter_impl(double rate, bool drop_late)
     timer_thread = new boost::thread(boost::bind(&boost::asio::io_service::run, &io));
     d_last_tag_time = 0; // time,sample starts at 0,0 unless we get an rx_time tag
     d_last_tag_samp = 0;
-    debug = true;
+    debug = false;
 }
 
 template <class T>
@@ -235,15 +239,15 @@ int interrupt_emitter_impl<T>::work(int noutput_items,
         UpdateTimer(error);
         if (debug)
             printf("tag_error = %f\n", error);
-    } else if (d_time_offset > 0) {
+    } else {
         // estimate time_now using the last rx_time tag and the samples we have processed since that time.
         double radio_time_est = d_last_tag_time + ((this->nitems_read(0) + noutput_items - d_last_tag_samp) / d_rate);
         double error = current_time - radio_time_est;
 
         if (std::abs(error) > 200e-6) {
             // Allow for some sample error, because the system clock isn't perfect
-            d_time_offset += error;
-            d_start_time -= error;
+            d_time_offset += d_gain * error;
+            d_start_time -= d_gain * error;
             current_ptime -=
                 boost::posix_time::microseconds(static_cast<long>(1e6 * error));
         }

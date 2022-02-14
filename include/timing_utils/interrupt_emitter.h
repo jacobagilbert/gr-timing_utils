@@ -41,6 +41,24 @@ namespace timing_utils {
  * The `rx_time` stream tag is used to adjust the internal times, accounting
  * for things like overflows or discontinous streams of data
  *
+ * The \p loop_gain parameter specifies the update rate for the error tracking
+ * loop.  The error tracking loop is used to compensate for drift between
+ * the system clock and the data source clock.  As the block only knows
+ * system time explicitly, based on the timestamp associated with samples in
+ * each work function, the system clock is skewed in order to produce an
+ * estimate of data source time at the requested time.
+ *
+ * The loop gain parameter should be set according to:
+ *    m = maximum system to data clock rate drift
+ *    c = maximal noisy error estimate
+ *
+ *    gain >= (m / (m + c))
+ *
+ * The maximal noisy error estimate is the result of system loading causing
+ * gnuradio scheduling to process data at varying rates.  The gain is inversely
+ * proportional to the noisy estimate, indicating that as the noise increases,
+ * the gain should decrease to compensate for the noise.
+ *
  * Note: This block has been templatized to maintain backward compatability
  * (Each block is instantiated based on the input/output data type)
  */
@@ -58,10 +76,11 @@ public:
      * \param rate Sample rate (Hz)
      * \param drop_late If true, do not emit a message for interrupt requests
      *    in the past
+     * \param loop_gain Clock drift tracking loop gain
      *
      * \return pointer to new instance
      */
-    static sptr make(double rate, bool drop_late);
+    static sptr make(double rate, bool drop_late, double loop_gain = .0001);
 
     /*! \brief Set the stream rate
      *
