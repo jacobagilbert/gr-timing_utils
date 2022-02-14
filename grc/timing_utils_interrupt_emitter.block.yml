@@ -21,6 +21,10 @@ parameters:
     label: Drop Late?
     dtype: bool
     default: 'False'
+-   id: loop_gain
+    label: Error Loop Gain
+    dtype: float
+    default: .0001
 
 inputs:
 -   domain: stream
@@ -36,6 +40,6 @@ outputs:
 
 templates:
     imports: import timing_utils
-    make: timing_utils.interrupt_emitter_${type}(${rate}, ${late_pdu_mode})
+    make: timing_utils.interrupt_emitter_${type}(${rate}, ${late_pdu_mode}, ${loop_gain})
 
 file_format: 1

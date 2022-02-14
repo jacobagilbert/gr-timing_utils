@@ -40,8 +40,11 @@ private:
 
     void handle_set_time(pmt::pmt_t int_time);
 
+    // integral loop gain for tracking time offset error
+    double d_gain;
+
 public:
-    interrupt_emitter_impl(double rate, bool drop_late);
+    interrupt_emitter_impl(double rate, bool drop_late, double loop_gain = .0001);
     ~interrupt_emitter_impl() override;
 
     void set_rate(double rate) override { d_rate = rate; }

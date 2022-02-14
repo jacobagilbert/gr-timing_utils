@@ -45,7 +45,7 @@ class qa_interrupt_emitter (gr_unittest.TestCase):
         self.utag = timing_utils.add_usrp_tags_c(1090e6, self.rate, 0, self.start_time)
         #self.tag_dbg = blocks.tag_debug(gr.sizeof_gr_complex*1, '', "");
         self.msg_dbg = blocks.message_debug()
-        self.timer = timing_utils.interrupt_emitter_c(self.rate, True)
+        self.timer = timing_utils.interrupt_emitter_c(self.rate, True, .001)
 
         self.tb.connect((self.src, 0), (self.throttle, 0))
         self.tb.connect((self.throttle, 0), (self.utag, 0))
@@ -78,10 +78,10 @@ class qa_interrupt_emitter (gr_unittest.TestCase):
         trig = pmt.dict_ref(msg, self.tkey, pmt.PMT_NIL)
         trig_int, trig_frac = pmt.to_uint64(pmt.car(trig)), pmt.to_double(pmt.cdr(trig))
         trig_time = trig_int + trig_frac
-        self.assertAlmostEqual(float(sample) / self.rate, float(expected_sample) / self.rate, 3,
+        self.assertAlmostEqual(float(sample) / self.rate, float(expected_sample) / self.rate, 2,
                                "Incorrect Sample from message: expected {}, received {}".format(expected_sample, sample))
 
-        self.assertAlmostEqual(trig_time, expected_time, 3,
+        self.assertAlmostEqual(trig_time, expected_time, 2,
                                "Incorrect interrupt time from message: expected {}, received {}".format(expected_time, trig_time))
 
     def test_001_basic(self):

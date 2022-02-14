@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(interrupt_emitter.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(d5befd123f4fd55a778baa54bc42c00a)                     */
+/* BINDTOOL_HEADER_FILE_HASH(14ce7d4ef71ee7f4720802c06264029e)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -41,7 +41,8 @@ void bind_interrupt_emitter_template(py::module& m, const char* classname)
                std::shared_ptr<interrupt_emitter>>(m, classname)
         .def(py::init(&gr::timing_utils::interrupt_emitter<T>::make),
              py::arg("rate"),
-             py::arg("drop_late"))
+             py::arg("drop_late"),
+             py::arg("loop_gain"))
         .def("set_rate", &interrupt_emitter::set_rate, py::arg("rate"))
         .def("set_debug", &interrupt_emitter::set_debug, py::arg("value"));
 }
