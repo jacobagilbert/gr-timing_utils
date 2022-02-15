@@ -77,7 +77,13 @@ template <class T>
 pmt::pmt_t interrupt_emitter_impl<T>::samples_to_tpmt(uint64_t trigger_sample)
 {
     // reference this sample to the end of the last buffer processed.
-    double time = (trigger_sample - d_start_sample) / d_rate + d_start_time;
+    double time =
+        (trigger_sample + int64_t((d_start_time * d_rate) - d_start_sample)) / d_rate;
+    if (time < 0) {
+        // this is an unlikely edge case wehre sample/WCT has experienced sudden slew,
+        // catch it set the time to the minimum representable value, zero
+        time = 0;
+    }
     uint64_t t_int = uint64_t(time);
     double t_frac = time - t_int;
     if (t_frac > 1) {
