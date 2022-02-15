@@ -28,7 +28,7 @@ parameters:
 
 inputs:
 -   domain: stream
-    dtype: ${ type.input }
+    dtype: ${ type.type }
 -   domain: message
     id: set
     optional: true

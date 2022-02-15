@@ -52,7 +52,7 @@ public:
      * \param loop_gain Clock rate drift tracking loop gain
      *
      */
-    interrupt_emitter_impl(double rate, bool drop_late, double loop_gain = .0001);
+    interrupt_emitter_impl(double rate, bool drop_late, double loop_gain);
     ~interrupt_emitter_impl();
 
     void set_rate(double rate) { d_rate = rate; }
