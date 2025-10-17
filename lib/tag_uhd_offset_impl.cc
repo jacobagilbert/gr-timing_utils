@@ -41,7 +41,7 @@ tag_uhd_offset_impl<T>::tag_uhd_offset_impl(float rate, uint32_t tag_interval)
       d_time_tag(pmt::PMT_NIL)
 {
     set_interval(tag_interval);
-    GR_LOG_INFO(this->d_logger, "setting up time tagger");
+    this->d_logger->info("setting up time tagger");
 
     this->message_port_register_out(PMTCONSTSTR__time());
 }
@@ -80,10 +80,8 @@ void tag_uhd_offset_impl<T>::update_time_tag(uint64_t offset)
 {
     double delta = ((offset - d_time_tag_offset) / d_rate);
     if (delta < 0) {
-        GR_LOG_ERROR(this->d_logger,
-                     boost::format("can't go back in time...updating time tag failed "
-                                   "(requested delta = %fs)") %
-                         delta);
+        this->d_logger->error("can't go back in time...updating time tag failed "
+                                   "(requested delta = {}s)", delta);
         return;
     }
     d_time_tag_frac_sec += delta;
@@ -127,8 +125,7 @@ int tag_uhd_offset_impl<T>::work(int noutput_items,
         for (size_t ii = 0; ii < tags.size(); ii++) {
             set_time_tag(tags[ii]);
             this->add_item_tag(0, tags[ii].offset, d_key, d_time_tag);
-            // GR_LOG_INFO(this->d_logger, boost::format("TAGGG! at sample %d") %
-            // d_time_tag_offset);
+            // this->d_logger->info("TAGGG! at sample {}", d_time_tag_offset);
             this->message_port_pub(PMTCONSTSTR__time(), pmt::cons(d_key, d_time_tag));
             d_next_tag_offset = tags[ii].offset + d_interval;
         }
@@ -141,16 +138,12 @@ int tag_uhd_offset_impl<T>::work(int noutput_items,
                 // necessary tag sample is within the window
                 update_time_tag(d_next_tag_offset);
                 this->add_item_tag(0, d_next_tag_offset, d_key, d_time_tag);
-                // GR_LOG_INFO(this->d_logger, boost::format("TAG! at sample %d") %
-                // d_time_tag_offset);
+                // this->d_logger->info("TAG! at sample {}", d_time_tag_offset);
                 d_next_tag_offset += d_interval;
-                // GR_LOG_INFO(this->d_logger, boost::format("next one at %d") %
-                // d_next_tag_offset);
+                // this->d_logger->info("next one at {}", d_next_tag_offset);
             } else {
                 // we should not have gotten into this state...
-                GR_LOG_WARN(
-                    this->d_logger,
-                    "unexpected state: attempted to tag item in previous work call!");
+                this->d_logger->warn("unexpected state: attempted to tag item in previous work call!");
                 // reset the next tag offset to the first item in the next input buffer;
                 d_next_tag_offset = d_total_nitems_read;
             }

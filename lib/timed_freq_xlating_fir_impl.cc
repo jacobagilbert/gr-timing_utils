@@ -281,11 +281,8 @@ int timed_freq_xlating_fir_impl<I, O, T>::work(int noutput_items,
                     double new_phase = pmt::to_double(pmt::cdr(tags[0].value));
                     handle_set_center_freq(pmt::dict_add(
                         pmt::make_dict(), PMTCONSTSTR__freq(), tags[0].value));
-                    GR_LOG_INFO(
-                        this->d_logger,
-                        boost::format("Synchronously setting freq xlator to %f Hz with a "
-                                      "phase of %f radians at sample %d") %
-                            new_freq % new_phase % tags[0].offset);
+                    this->d_logger->info("Synchronously setting freq xlator to {:.1f} Hz with a phase of"
+                                    "{:.6f} radians at sample {}", new_freq, new_phase, tags[0].offset);
                     d_tag_freq_applied = true;
                 } else if (pmt::is_real(tags[0].value)) {
                     double new_freq = pmt::to_double(tags[0].value);
@@ -293,15 +290,12 @@ int timed_freq_xlating_fir_impl<I, O, T>::work(int noutput_items,
                         // inform the block to retune the next time it is run
                         handle_set_center_freq(pmt::dict_add(
                             pmt::make_dict(), PMTCONSTSTR__freq(), tags[0].value));
-                        GR_LOG_INFO(
-                            this->d_logger,
-                            boost::format(
-                                "Synchronously setting freq xlator to %f at sample %d") %
-                                new_freq % tags[0].offset);
+                        this->d_logger->info("Synchronously setting freq xlator to {:.1f} at sample {}",
+                                new_freq, tags[0].offset);
                     }
                     d_tag_freq_applied = true;
                 } else {
-                    GR_LOG_ERROR(this->d_logger, "Invalid frequency tag type");
+                    this->d_logger->error("Invalid frequency tag type");
                 }
             } else {
                 // tag frequency was applied on previous iteration so mark unapplied

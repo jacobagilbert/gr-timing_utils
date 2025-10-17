@@ -95,7 +95,7 @@ int system_time_diff_impl<T>::general_work(int noutput_items,
             if (pmt::eq(PMTCONSTSTR__wall_clock_time(), tags[ii].key)) {
                 double diff = t_now - pmt::to_double(tags[ii].value);
                 if (d_output_diff) {
-                    std::cout << boost::format("diff = %0.9f s") % diff << std::endl;
+                    this->d_logger->info("diff = {:.9f} s", diff);
                 }
 
                 // update tag if requested
